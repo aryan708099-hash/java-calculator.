@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Java Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .calculator {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      width: 290px;
+      box-shadow: 0 5px 20px #0002;
+    }
+    h2 { text-align: center; }
+    #display {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      font-size: 25px;
+      text-align: right;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    button {
+      padding: 16px 0;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #e5e7eb;
+    }
+    button:active { background: #c7d2fe; }
+    .operator { background: #c7d2fe; }
+    .clear { background: #fecaca; }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h2>My Calculator</h2>
+    <input id="display" value="0" readonly>
+    <div class="buttons">
+      <button class="clear" onclick="clearDisplay()">C</button>
+      <button onclick="backspace()">⌫</button>
+      <button class="operator" onclick="choose('/')">÷</button>
+      <button class="operator" onclick="choose('*')">×</button>
+
+      <button onclick="digit('7')">7</button>
+      <button onclick="digit('8')">8</button>
+      <button onclick="digit('9')">9</button>
+      <button class="operator" onclick="choose('-')">−</button>
+
+      <button onclick="digit('4')">4</button>
+      <button onclick="digit('5')">5</button>
+      <button onclick="digit('6')">6</button>
+      <button class="operator" onclick="choose('+')">+</button>
+
+      <button onclick="digit('1')">1</button>
+      <button onclick="digit('2')">2</button>
+      <button onclick="digit('3')">3</button>
+      <button onclick="digit('0')">0</button>
+
+      <button onclick="decimal()">.</button>
+      <button onclick="calculate()" style="grid-column: span 3; background:#86efac">=</button>
+    </div>
+  </div>
+
+  <script>
+    let current = '0';
+    let stored = null;
+    let operator = null;
+    let fresh = false;
+
+    const display = document.getElementById('display');
+
+    function show() { display.value = current; }
+
+    function digit(n) {
+      if (fresh) {
+        current = n;
+        fresh = false;
+      } else {
+        current = current === '0' ? n : current + n;
+      }
+      show();
+    }
+
+    function decimal() {
+      if (fresh) {
+        current = '0';
+        fresh = false;
+      }
+      if (!current.includes('.')) current += '.';
+      show();
+    }
+
+    function choose(op) {
+      if (operator && !fresh) calculate();
+      stored = Number(current);
+      operator = op;
+      fresh = true;
+    }
+
+    function calculate() {
+      if (operator === null || stored === null) return;
+      const a = stored;
+      const b = Number(current);
+      let result;
+
+      if (operator === '+') result = a + b;
+      if (operator === '-') result = a - b;
+      if (operator === '*') result = a * b;
+      if (operator === '/') {
+        if (b === 0) {
+          current = 'Cannot divide by zero';
+          operator = null;
+          stored = null;
+          fresh = true;
+          show();
+          return;
+        }
+        result = a / b;
+      }
+
+      current = String(Number(result.toPrecision(10)));
+      operator = null;
+      stored = null;
+      fresh = true;
+      show();
+    }
+
+    function clearDisplay() {
+      current = '0';
+      stored = null;
+      operator = null;
+      fresh = false;
+      show();
+    }
+
+    function backspace() {
+      if (fresh) return;
+      current = current.length > 1 ? current.slice(0, -1) : '0';
+      show();
+    }
+  </script>
+</body>
+</html>

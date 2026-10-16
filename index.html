@@ -2,161 +2,434 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Java Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #eef2ff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .calculator {
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      width: 290px;
-      box-shadow: 0 5px 20px #0002;
-    }
-    h2 { text-align: center; }
-    #display {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px;
-      font-size: 25px;
-      text-align: right;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    button {
-      padding: 16px 0;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #e5e7eb;
-    }
-    button:active { background: #c7d2fe; }
-    .operator { background: #c7d2fe; }
-    .clear { background: #fecaca; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova Scientific Calculator</title>
+<style>
+:root {
+  --bg:#eef2ff; --panel:#ffffff; --text:#172033;
+  --key:#f1f5f9; --accent:#635bff; --muted:#64748b;
+}
+body.dark {
+  --bg:#0b1020; --panel:#151c30; --text:#f8fafc;
+  --key:#242d44; --accent:#8b83ff; --muted:#a6b0c5;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; min-height:100vh; padding:20px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--bg); color:var(--text);
+  font-family:system-ui,Arial,sans-serif; transition:.2s;
+}
+.app { width:100%; max-width:460px; }
+.top {
+  display:flex; justify-content:space-between;
+  align-items:center; margin-bottom:16px;
+}
+.brand { font-size:21px; font-weight:800; }
+.brand span { color:var(--accent); }
+.small {
+  background:var(--panel); color:var(--text);
+  border:1px solid #94a3b833; padding:9px 12px;
+  border-radius:12px; cursor:pointer;
+}
+.calculator {
+  background:var(--panel); padding:18px;
+  border-radius:25px; box-shadow:0 18px 55px #00000015;
+}
+.screen {
+  min-height:130px; padding:16px 8px;
+  display:flex; flex-direction:column;
+  justify-content:flex-end; text-align:right;
+  overflow:hidden;
+}
+#expression {
+  color:var(--muted); font-size:17px;
+  min-height:28px; overflow-wrap:anywhere;
+}
+#display {
+  font-size:clamp(30px,8vw,43px); font-weight:700;
+  overflow-wrap:anywhere; line-height:1.25;
+}
+.modebar {
+  display:flex; justify-content:space-between;
+  align-items:center; margin:10px 0 14px;
+  color:var(--muted); font-size:13px;
+}
+.keys {
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:9px;
+}
+button.key {
+  min-width:0; height:53px; border:0; border-radius:14px;
+  background:var(--key); color:var(--text);
+  font-size:17px; font-weight:600; cursor:pointer;
+  transition:transform .1s,filter .1s;
+}
+button.key:active { transform:scale(.95); }
+button.fn { color:var(--accent); font-size:15px; }
+button.op { background:color-mix(in srgb,var(--accent) 13%,var(--panel)); color:var(--accent); }
+button.danger { color:#ef4444; }
+button.equal { background:var(--accent); color:white; }
+.history {
+  background:var(--panel); border-radius:20px;
+  margin-top:15px; padding:15px;
+}
+.historyhead { display:flex; justify-content:space-between; align-items:center; }
+.history h3 { margin:0; font-size:16px; }
+#historyList { max-height:140px; overflow:auto; }
+.historyitem {
+  padding:9px 0; border-bottom:1px solid #94a3b822;
+  color:var(--muted); font-size:13px; overflow-wrap:anywhere;
+}
+.historyitem strong { display:block; color:var(--text); font-size:16px; }
+.hint { color:var(--muted); font-size:12px; text-align:center; margin:15px 0; }
+@media(max-width:360px) {
+  body { padding:10px; }
+  .calculator { padding:11px; }
+  .keys { gap:6px; }
+  button.key { height:47px; font-size:15px; border-radius:11px; }
+}
+</style>
 </head>
 <body>
-  <div class="calculator">
-    <h2>My Calculator</h2>
-    <input id="display" value="0" readonly>
-    <div class="buttons">
-      <button class="clear" onclick="clearDisplay()">C</button>
-      <button onclick="backspace()">⌫</button>
-      <button class="operator" onclick="choose('/')">÷</button>
-      <button class="operator" onclick="choose('*')">×</button>
-
-      <button onclick="digit('7')">7</button>
-      <button onclick="digit('8')">8</button>
-      <button onclick="digit('9')">9</button>
-      <button class="operator" onclick="choose('-')">−</button>
-
-      <button onclick="digit('4')">4</button>
-      <button onclick="digit('5')">5</button>
-      <button onclick="digit('6')">6</button>
-      <button class="operator" onclick="choose('+')">+</button>
-
-      <button onclick="digit('1')">1</button>
-      <button onclick="digit('2')">2</button>
-      <button onclick="digit('3')">3</button>
-      <button onclick="digit('0')">0</button>
-
-      <button onclick="decimal()">.</button>
-      <button onclick="calculate()" style="grid-column: span 3; background:#86efac">=</button>
-    </div>
+<div class="app">
+  <div class="top">
+    <div class="brand">NOVA <span>CALC</span></div>
+    <button class="small" onclick="toggleTheme()" aria-label="Toggle theme">☾ Theme</button>
   </div>
 
-  <script>
-    let current = '0';
-    let stored = null;
-    let operator = null;
-    let fresh = false;
+  <main class="calculator">
+    <div class="screen" aria-live="polite">
+      <div id="expression">Scientific calculator</div>
+      <div id="display">0</div>
+    </div>
 
-    const display = document.getElementById('display');
+    <div class="modebar">
+      <button class="small" id="angle" onclick="toggleAngle()">DEG</button>
+      <span>Scientific mode</span>
+      <button class="small" onclick="clearAll()">AC</button>
+    </div>
 
-    function show() { display.value = current; }
+    <div class="keys">
+      <button class="key fn" onclick="constant('Math.PI','π')">π</button>
+      <button class="key fn" onclick="constant('Math.E','e')">e</button>
+      <button class="key fn" onclick="append('(')">(</button>
+      <button class="key fn" onclick="append(')')">)</button>
+      <button class="key danger" onclick="backspace()">⌫</button>
 
-    function digit(n) {
-      if (fresh) {
-        current = n;
-        fresh = false;
-      } else {
-        current = current === '0' ? n : current + n;
+      <button class="key fn" onclick="func('sin')">sin</button>
+      <button class="key fn" onclick="func('cos')">cos</button>
+      <button class="key fn" onclick="func('tan')">tan</button>
+      <button class="key fn" onclick="func('log')">log</button>
+      <button class="key fn" onclick="func('ln')">ln</button>
+
+      <button class="key fn" onclick="func('sqrt')">√x</button>
+      <button class="key fn" onclick="square()">x²</button>
+      <button class="key fn" onclick="append('^')">xʸ</button>
+      <button class="key fn" onclick="factorial()">n!</button>
+      <button class="key fn" onclick="append('/100')">%</button>
+
+      <button class="key" onclick="append('7')">7</button>
+      <button class="key" onclick="append('8')">8</button>
+      <button class="key" onclick="append('9')">9</button>
+      <button class="key op" onclick="append('/')">÷</button>
+      <button class="key op" onclick="append('*')">×</button>
+
+      <button class="key" onclick="append('4')">4</button>
+      <button class="key" onclick="append('5')">5</button>
+      <button class="key" onclick="append('6')">6</button>
+      <button class="key op" onclick="append('-')">−</button>
+      <button class="key op" onclick="append('+')">+</button>
+
+      <button class="key" onclick="append('1')">1</button>
+      <button class="key" onclick="append('2')">2</button>
+      <button class="key" onclick="append('3')">3</button>
+      <button class="key" onclick="append('0')">0</button>
+      <button class="key" onclick="append('.')">.</button>
+
+      <button class="key fn" onclick="sign()">±</button>
+      <button class="key fn" onclick="append('Ans')">Ans</button>
+      <button class="key danger" onclick="clearEntry()">CE</button>
+      <button class="key equal" style="grid-column:span 2" onclick="calculate()">=</button>
+    </div>
+  </main>
+
+  <section class="history">
+    <div class="historyhead">
+      <h3>Calculation history</h3>
+      <button class="small" onclick="clearHistory()">Clear</button>
+    </div>
+    <div id="historyList"><div class="historyitem">Your calculations will appear here.</div></div>
+  </section>
+  <div class="hint">Keyboard supported · Calculations run in your browser</div>
+</div>
+
+<script>
+let expression = '';
+let answer = 0;
+let degrees = true;
+let justCalculated = false;
+let historyItems = [];
+
+const display = document.getElementById('display');
+const expressionBox = document.getElementById('expression');
+
+function render() {
+  display.textContent = expression || '0';
+}
+
+function append(value) {
+  if (justCalculated && /[0-9.(]/.test(value)) {
+    expression = '';
+  }
+  justCalculated = false;
+  expression += value;
+  render();
+}
+
+function constant(value, label) {
+  if (justCalculated) expression = '';
+  justCalculated = false;
+  expression += label;
+  render();
+}
+
+function clearAll() {
+  expression = '';
+  justCalculated = false;
+  expressionBox.textContent = 'Scientific calculator';
+  render();
+}
+
+function clearEntry() {
+  expression = '';
+  render();
+}
+
+function backspace() {
+  if (justCalculated) {
+    expression = '';
+    justCalculated = false;
+  } else {
+    expression = expression.slice(0, -1);
+  }
+  render();
+}
+
+function toggleAngle() {
+  degrees = !degrees;
+  document.getElementById('angle').textContent = degrees ? 'DEG' : 'RAD';
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+}
+
+function func(name) {
+  const map = {
+    sin:'sin(', cos:'cos(', tan:'tan(',
+    log:'log(', ln:'ln(', sqrt:'sqrt('
+  };
+  if (justCalculated) expression = '';
+  justCalculated = false;
+  expression += map[name];
+  render();
+}
+
+function square() {
+  if (!expression) return;
+  expression = '(' + expression + ')^2';
+  render();
+}
+
+function sign() {
+  if (!expression) expression = '-';
+  else expression = '-(' + expression + ')';
+  justCalculated = false;
+  render();
+}
+
+function factorial() {
+  if (!expression) return;
+  expression = 'fact(' + expression + ')';
+  justCalculated = false;
+  render();
+}
+
+// Convert the displayed math expression into a restricted
+// mathematical expression. No arbitrary JavaScript is evaluated.
+function evaluateMath(input) {
+  let s = input.replace(/\s/g, '');
+  if (!s) throw Error('Enter a calculation');
+
+  // Insert multiplication for cases like 2π, 2(3+4), or (2)(3).
+  s = s.replace(/(\d|\)|π|e)(?=(π|e|\(|sin\(|cos\(|tan\(|log\(|ln\(|sqrt\())/g, '$1*');
+  s = s.replace(/(\))(?=\d)/g, '$1*');
+
+  s = s.replace(/π/g, 'PI');
+  s = s.replace(/Ans/g, '(' + answer + ')');
+
+  // Allow only numbers, operators, parentheses, and known functions.
+  const allowedNames = ['sin','cos','tan','log','ln','sqrt','fact','PI','E'];
+  let tokens = s.match(/[A-Za-z]+|(?:\d+\.?\d*|\.\d+)|[()+\-*/^!,]/g);
+  if (!tokens || tokens.join('') !== s) throw Error('Invalid expression');
+
+  for (const token of tokens) {
+    if (/^[A-Za-z]+$/.test(token) && !allowedNames.includes(token)) {
+      throw Error('Unknown function');
+    }
+  }
+
+  // Recursive-descent parser.
+  let i = 0;
+  function peek() { return tokens[i]; }
+  function take(t) {
+    if (peek() === t) { i++; return true; }
+    return false;
+  }
+
+  function primary() {
+    if (take('+')) return primary();
+    if (take('-')) return -primary();
+
+    if (take('(')) {
+      const v = addSub();
+      if (!take(')')) throw Error('Missing )');
+      return v;
+    }
+
+    if (peek() === 'PI') { i++; return Math.PI; }
+    if (peek() === 'E') { i++; return Math.E; }
+
+    if (['sin','cos','tan','log','ln','sqrt','fact'].includes(peek())) {
+      const name = tokens[i++];
+      if (!take('(')) throw Error('Expected (');
+      const x = addSub();
+      if (!take(')')) throw Error('Missing )');
+
+      if (name === 'sin') return Math.sin(degrees ? x*Math.PI/180 : x);
+      if (name === 'cos') return Math.cos(degrees ? x*Math.PI/180 : x);
+      if (name === 'tan') return Math.tan(degrees ? x*Math.PI/180 : x);
+      if (name === 'log') {
+        if (x <= 0) throw Error('Log needs a positive number');
+        return Math.log10(x);
       }
-      show();
-    }
-
-    function decimal() {
-      if (fresh) {
-        current = '0';
-        fresh = false;
+      if (name === 'ln') {
+        if (x <= 0) throw Error('Ln needs a positive number');
+        return Math.log(x);
       }
-      if (!current.includes('.')) current += '.';
-      show();
-    }
-
-    function choose(op) {
-      if (operator && !fresh) calculate();
-      stored = Number(current);
-      operator = op;
-      fresh = true;
-    }
-
-    function calculate() {
-      if (operator === null || stored === null) return;
-      const a = stored;
-      const b = Number(current);
-      let result;
-
-      if (operator === '+') result = a + b;
-      if (operator === '-') result = a - b;
-      if (operator === '*') result = a * b;
-      if (operator === '/') {
-        if (b === 0) {
-          current = 'Cannot divide by zero';
-          operator = null;
-          stored = null;
-          fresh = true;
-          show();
-          return;
+      if (name === 'sqrt') {
+        if (x < 0) throw Error('Negative square root');
+        return Math.sqrt(x);
+      }
+      if (name === 'fact') {
+        if (x < 0 || x > 170 || !Number.isInteger(x)) {
+          throw Error('Factorial needs a whole number from 0 to 170');
         }
-        result = a / b;
+        let result = 1;
+        for (let n = 2; n <= x; n++) result *= n;
+        return result;
       }
-
-      current = String(Number(result.toPrecision(10)));
-      operator = null;
-      stored = null;
-      fresh = true;
-      show();
     }
 
-    function clearDisplay() {
-      current = '0';
-      stored = null;
-      operator = null;
-      fresh = false;
-      show();
+    if (peek() && /^(\d+\.?\d*|\.\d+)$/.test(peek())) {
+      return Number(tokens[i++]);
     }
+    throw Error('Check your expression');
+  }
 
-    function backspace() {
-      if (fresh) return;
-      current = current.length > 1 ? current.slice(0, -1) : '0';
-      show();
+  function power() {
+    let x = primary();
+    if (take('^')) x = Math.pow(x, power());
+    return x;
+  }
+
+  function multiplyDivide() {
+    let x = power();
+    while (peek() === '*' || peek() === '/') {
+      const op = tokens[i++];
+      const y = power();
+      if (op === '/' && y === 0) throw Error('Cannot divide by zero');
+      x = op === '*' ? x*y : x/y;
     }
-  </script>
+    return x;
+  }
+
+  function addSub() {
+    let x = multiplyDivide();
+    while (peek() === '+' || peek() === '-') {
+      const op = tokens[i++];
+      const y = multiplyDivide();
+      x = op === '+' ? x+y : x-y;
+    }
+    return x;
+  }
+
+  const result = addSub();
+  if (i !== tokens.length) throw Error('Check your expression');
+  if (!Number.isFinite(result)) throw Error('Result is out of range');
+  return result;
+}
+
+function calculate() {
+  try {
+    const old = expression;
+    const result = evaluateMath(old);
+    answer = result;
+    const formatted = Number(result.toPrecision(12)).toString();
+    expressionBox.textContent = old + ' =';
+    expression = formatted;
+    display.textContent = formatted;
+    justCalculated = true;
+    historyItems.unshift({old, formatted});
+    historyItems = historyItems.slice(0, 10);
+    renderHistory();
+  } catch (err) {
+    expressionBox.textContent = err.message || 'Invalid expression';
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.replaceChildren();
+  if (!historyItems.length) {
+    list.textContent = 'Your calculations will appear here.';
+    return;
+  }
+  historyItems.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'historyitem';
+    row.textContent = item.old;
+    const strong = document.createElement('strong');
+    strong.textContent = '= ' + item.formatted;
+    row.appendChild(strong);
+    row.tabIndex = 0;
+    row.title = 'Tap to reuse this result';
+    row.onclick = () => {
+      expression = item.formatted;
+      justCalculated = true;
+      expressionBox.textContent = item.old + ' =';
+      render();
+    };
+    list.appendChild(row);
+  });
+}
+
+function clearHistory() {
+  historyItems = [];
+  renderHistory();
+}
+
+document.addEventListener('keydown', event => {
+  if (/^[0-9.]$/.test(event.key)) append(event.key);
+  else if (['+','-','*','/','(',')','^'].includes(event.key)) append(event.key);
+  else if (event.key === 'Enter' || event.key === '=') {
+    event.preventDefault();
+    calculate();
+  } else if (event.key === 'Backspace') backspace();
+  else if (event.key === 'Escape') clearAll();
+});
+</script>
 </body>
 </html>
